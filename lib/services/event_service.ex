@@ -1,15 +1,20 @@
 defmodule Aprb.Service.EventService do
-  alias Aprb.{Repo, Topic}
+  alias Aprb.{Repo, Topic, Summary}
+
   def receive_event(event, topic) do
-    proccessed_message = process_event(event, topic)
+    proccessed_message = process_event(decode_event(event), topic)
     # broadcast a message to a topic
     for subscriber <- get_topic_subscribers(topic) do
       Slack.Web.Chat.post_message("##{subscriber.channel_name}", proccessed_message[:text], %{attachments: proccessed_message[:attachments], unfurl_links: proccessed_message[:unfurl_links], as_user: true})
     end
   end
 
-  defp process_event(event, topic) do
-    event = Poison.decode!(event.value)
+  def decode_event(event) do
+    Poison.decode!(event.value)
+  end
+
+  def process_event(event, topic) do
+    update_summary(topic, event)
     case topic do
       "users" ->
         %{text: ":heart: #{cleanup_name(event["subject"]["display"])} #{event["verb"]} https://www.artsy.net/artist/#{event["properties"]["artist"]["id"]}",
@@ -88,6 +93,21 @@ defmodule Aprb.Service.EventService do
     full_name
       |> String.split
       |> List.first
+  end
+
+  defp update_summary(topic, event) do
+    current_date = Calendar.Date.today! "America/New_York"
+    if Enum.member?(~w(subscriptions users inquiries purchases), topic) do
+      t = Repo.get_by!(Topic, name: topic)
+      summary_query = Summary.find_by_topic_verb_date(t.id, event["verb"], current_date)
+      if !Repo.one(summary_query) do
+        changeset = Summary.changeset(%Summary{}, %{topic_id: t.id, verb: event["verb"], summary_date: current_date, total_count: 0})
+        Repo.insert!(changeset)
+      end
+      summary = Repo.one(summary_query)
+      updated_summary = Summary.changeset(summary, %{total_count: summary.total_count + 1})
+      Repo.update(updated_summary)
+    end
   end
 
   defp format_price(price) do

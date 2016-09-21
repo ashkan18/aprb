@@ -14,7 +14,7 @@ defmodule Aprb.Service.EventService do
   end
 
   def process_event(event, topic) do
-    SummaryService.update_summary(topic, event)
+    Task.start_link(fn -> SummaryService.update_summary(topic, event) end)
     case topic do
       "users" ->
         %{text: ":heart: #{cleanup_name(event["subject"]["display"])} #{event["verb"]} https://www.artsy.net/artist/#{event["properties"]["artist"]["id"]}",

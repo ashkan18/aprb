@@ -1,5 +1,5 @@
 defmodule Aprb.Service.EventService do
-  alias Aprb.{Repo, Topic, Summary}
+  alias Aprb.{Repo, Topic, Service.SummaryService}
 
   def receive_event(event, topic) do
     proccessed_message = process_event(decode_event(event), topic)
@@ -14,7 +14,7 @@ defmodule Aprb.Service.EventService do
   end
 
   def process_event(event, topic) do
-    update_summary(topic, event)
+    SummaryService.update_summary(topic, event)
     case topic do
       "users" ->
         %{text: ":heart: #{cleanup_name(event["subject"]["display"])} #{event["verb"]} https://www.artsy.net/artist/#{event["properties"]["artist"]["id"]}",
@@ -93,21 +93,6 @@ defmodule Aprb.Service.EventService do
     full_name
       |> String.split
       |> List.first
-  end
-
-  defp update_summary(topic, event) do
-    current_date = Calendar.Date.today! "America/New_York"
-    if Enum.member?(~w(subscriptions users inquiries purchases), topic) do
-      t = Repo.get_by!(Topic, name: topic)
-      summary_query = Summary.find_by_topic_verb_date(t.id, event["verb"], current_date)
-      if !Repo.one(summary_query) do
-        changeset = Summary.changeset(%Summary{}, %{topic_id: t.id, verb: event["verb"], summary_date: current_date, total_count: 0})
-        Repo.insert!(changeset)
-      end
-      summary = Repo.one(summary_query)
-      updated_summary = Summary.changeset(summary, %{total_count: summary.total_count + 1})
-      Repo.update(updated_summary)
-    end
   end
 
   defp format_price(price) do

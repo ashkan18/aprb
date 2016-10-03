@@ -36,6 +36,11 @@ defmodule Aprb.Service.EventService do
                               \"title\": \"Partner\",
                               \"value\": \"#{event["properties"]["partner"]["name"]}\",
                               \"short\": true
+                            },
+                            {
+                              \"title\": \"Total this month\",
+                              \"value\": \"#{SummaryService.get_summary_for_month(DateTime.utc_now.year, DateTime.utc_now.month)}\",
+                              \"short\": false
                             }
                           ]
                         }]",

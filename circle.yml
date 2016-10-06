@@ -4,7 +4,7 @@ machine:
 
 dependencies:
   pre:
-    - script/ci_prepare.sh
+    - scripts/ci_prepare.sh
   cache_directories:
     - ~/dependencies
     - ~/.mix
@@ -15,7 +15,7 @@ dependencies:
 
 test:
   override:
-    - script/ci_tests.sh
+    - scripts/ci_tests.sh
 
 deployment:
   prod:

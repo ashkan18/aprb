@@ -1,0 +1,17 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/aprb:$CIRCLE_SHA1 .
+
+test:
+  override:
+    - mix test
+
+deployment:
+  prod:
+    branch: master
+    commands:
+      - ./deploy.sh

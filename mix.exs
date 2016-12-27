@@ -14,7 +14,7 @@ defmodule Aprb.Mixfile do
 
   def application do
     [ mod: {Aprb, []},
-      applications: [:logger, :maru, :amqp, :slack, :postgrex, :ecto, :calendar]]
+      applications: [:logger, :maru, :amqp, :kafka_ex, :slack, :postgrex, :ecto, :calendar]]
   end
 
   defp aliases do

@@ -22,8 +22,9 @@ defmodule Aprb.Mixfile do
   end
 
   defp deps do
-    [ {:maru, github: "falood/maru"},
+    [ {:maru, "~> 0.11"},
       {:kafka_ex, "~> 0.5.0"},
+      {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", override: true},
       {:amqp, "0.1.4"},
       {:poison, "~> 2.0"},
       {:slack, "~> 0.7.0"},

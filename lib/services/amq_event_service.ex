@@ -12,7 +12,7 @@ defmodule Aprb.Service.AmqEventService do
     rabbitmq_connect(topic)
   end
 
-	defp rabbitmq_connect(topic) do
+  defp rabbitmq_connect(topic) do
     case Connection.open(
       username: System.get_env("RABBITMQ_USER"),
       password: System.get_env("RABBITMQ_PASSWORD"),
@@ -41,10 +41,10 @@ defmodule Aprb.Service.AmqEventService do
         :timer.sleep(10000)
         rabbitmq_connect(topic)
     end
-	end
+  end
 
-	# 2. Implement a callback to handle DOWN notifications from the system
-	#    This callback should try to reconnect to the server
+  # 2. Implement a callback to handle DOWN notifications from the system
+  #    This callback should try to reconnect to the server
 
   def handle_info({:DOWN, _, :process, _pid, _reason}, {_chan, topic}) do
     {:ok, {chan, topic}} = rabbitmq_connect(topic)
